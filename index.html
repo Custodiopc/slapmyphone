@@ -1,11 +1,465 @@
-html<!DOCTYPE html>
-<html>
-<head><title>Slap My Phone</title></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Slap My Phone</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red: #FF3B30;
+    --red-dark: #C0392B;
+    --black: #0A0A0A;
+    --black2: #111111;
+    --grey: #1A1A1A;
+    --text: #FFFFFF;
+    --muted: #666666;
+    --yellow: #FFD60A;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 20px; height: 20px;
+    border: 2px solid var(--red);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease, background 0.15s ease;
+    transform: translate(-50%, -50%);
+  }
+  .cursor.clicked { transform: translate(-50%, -50%) scale(2); background: rgba(255,59,48,0.3); }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 40px 24px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  /* Big red circle behind */
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,59,48,0.15) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--grey);
+    border: 1px solid #333;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-emoji {
+    font-size: clamp(80px, 15vw, 140px);
+    display: block;
+    animation: fadeUp 0.6s 0.1s ease both, slap 3s 1s ease-in-out infinite;
+    filter: drop-shadow(0 0 40px rgba(255,59,48,0.4));
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+
+  @keyframes slap {
+    0%, 85%, 100% { transform: rotate(0deg) translateX(0); }
+    90% { transform: rotate(-20deg) translateX(-15px); }
+    95% { transform: rotate(15deg) translateX(10px); }
+  }
+
+  h1 {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: clamp(48px, 10vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    animation: fadeUp 0.6s 0.2s ease both;
+    margin-bottom: 8px;
+  }
+
+  h1 span { color: var(--red); }
+
+  .tagline {
+    font-size: clamp(16px, 3vw, 22px);
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 480px;
+    line-height: 1.5;
+    animation: fadeUp 0.6s 0.3s ease both;
+    margin-bottom: 48px;
+  }
+
+  .cta-group {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--red);
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 16px 32px;
+    border-radius: 100px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 40px rgba(255,59,48,0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 0 60px rgba(255,59,48,0.5);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 16px;
+    padding: 16px 32px;
+    border-radius: 100px;
+    border: 1px solid #333;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .btn-secondary:hover { color: white; border-color: #666; }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeUp 0.6s 0.8s ease both, bounce 2s 1.5s ease-in-out infinite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ── FEATURES ── */
+  .features {
+    padding: 120px 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: clamp(32px, 6vw, 56px);
+    line-height: 1.05;
+    margin-bottom: 64px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+  }
+
+  .feature-card {
+    background: var(--black2);
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .feature-card:hover { background: var(--grey); }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 0;
+    background: var(--red);
+    transition: height 0.3s ease;
+  }
+
+  .feature-card:hover::before { height: 100%; }
+
+  .feature-icon {
+    font-size: 40px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .feature-title {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 22px;
+    margin-bottom: 10px;
+    letter-spacing: 0.01em;
+  }
+
+  .feature-desc {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── INSPIRED BY ── */
+  .inspired {
+    padding: 80px 24px;
+    border-top: 1px solid #1a1a1a;
+    border-bottom: 1px solid #1a1a1a;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .inspired p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .inspired strong { color: white; }
+
+  /* ── CTA BOTTOM ── */
+  .cta-bottom {
+    padding: 120px 24px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .cta-bottom h2 {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: clamp(40px, 8vw, 80px);
+    line-height: 1;
+    margin-bottom: 32px;
+  }
+
+  .cta-bottom h2 span { color: var(--red); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 24px;
+    border-top: 1px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 13px;
+    position: relative;
+    z-index: 2;
+  }
+
+  footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  footer a:hover { color: white; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Play Store badge */
+  .play-badge {
+    width: 180px;
+    height: auto;
+    filter: brightness(0.9);
+    transition: filter 0.2s;
+  }
+  .play-badge:hover { filter: brightness(1.1); }
+
+  @media (max-width: 600px) {
+    .cta-group { flex-direction: column; align-items: center; }
+    footer { justify-content: center; text-align: center; }
+  }
+</style>
+</head>
 <body>
-  <h1>👋 Slap My Phone</h1>
-  <p>An Android app inspired by Slap Your Mac.</p>
-  <a href="https://play.google.com/store/apps/details?id=com.slapmyphone.app">
-    Download on Google Play
-  </a>
+
+<div class="cursor" id="cursor"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">Android App</div>
+  <span class="hero-emoji">👋</span>
+  <h1>SLAP MY<br/><span>PHONE</span></h1>
+  <p class="tagline">Hit your phone and it screams back. The Android version of Slap Your Mac — with prank features.</p>
+  <div class="cta-group">
+    <a href="https://play.google.com/store/apps/details?id=com.slapmyphone.app" class="btn-primary">
+      ▶ &nbsp;Download on Google Play
+    </a>
+    <a href="#features" class="btn-secondary">See features ↓</a>
+  </div>
+  <div class="scroll-hint">
+    <span>scroll</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 3v10M4 9l4 4 4-4" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <p class="section-label reveal">What it does</p>
+  <h2 class="section-title reveal">Every way to make<br/>your phone <span style="color:var(--red)">suffer.</span></h2>
+
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <span class="feature-icon">👊</span>
+      <div class="feature-title">Slap Detection</div>
+      <p class="feature-desc">Hit the back of your phone and it instantly plays a pain sound. Adjustable sensitivity — from a light tap to a full slap.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">👻</span>
+      <div class="feature-title">Background Mode</div>
+      <p class="feature-desc">Runs completely in the background. Hand the phone to someone — they'll have no idea until they slap it.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">🔌</span>
+      <div class="feature-title">Charger Prank</div>
+      <p class="feature-desc">Plug in the charger and the phone moans. Leave it on someone's desk and watch the chaos unfold.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">⏱️</span>
+      <div class="feature-title">Moan Timer</div>
+      <p class="feature-desc">Set a timer and the phone screams on its own every X minutes. Perfect for haunting a room without being there.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">🎙️</span>
+      <div class="feature-title">Multiple Voices</div>
+      <p class="feature-desc">Choose from different voice packs. Each one has a unique reaction — pick the one that fits the prank.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">📳</span>
+      <div class="feature-title">Haptic Feedback</div>
+      <p class="feature-desc">The phone vibrates in proportion to the force of the slap. The harder you hit, the more it reacts.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INSPIRED BY -->
+<div class="inspired">
+  <p class="reveal">Inspired by <strong>Slap Your Mac</strong> — the viral app that made MacBooks scream when slapped. We brought the same chaotic energy to Android. 📱💥</p>
+</div>
+
+<!-- CTA BOTTOM -->
+<section class="cta-bottom">
+  <h2 class="reveal">Ready to<br/><span>slap it?</span></h2>
+  <div class="cta-group reveal">
+    <a href="https://play.google.com/store/apps/details?id=com.slapmyphone.app" class="btn-primary">
+      ▶ &nbsp;Get it on Google Play
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>👋 Slap My Phone</span>
+  <div style="display:flex;gap:24px">
+    <a href="YOUR_PRIVACY_POLICY_LINK">Privacy Policy</a>
+    <a href="mailto:YOUR_EMAIL">Contact</a>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('clicked'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('clicked'));
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
